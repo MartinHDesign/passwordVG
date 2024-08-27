@@ -83,4 +83,19 @@ public class ManageFiles {
             System.err.println("An error occurred while writing to the file: " + e.getMessage());
         }
     }
+
+    public boolean isFileEmpty(String filePath) {
+        Path path = Paths.get(filePath);
+        try {
+
+            if (Files.exists(path)) {
+
+                long fileSize = Files.size(path);
+                return fileSize == 0;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

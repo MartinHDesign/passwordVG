@@ -26,15 +26,22 @@ public class PasswordVgApplication {
     @Bean
     public CommandLineRunner createHashFile() {
         return args -> {
-            ManageFiles manage = new ManageFiles();
+            createHashTextFile();
+        };
+    }
 
-            manage.createHashTextFile();
+    private void createHashTextFile(){
+        ManageFiles manage = new ManageFiles();
 
+        manage.createHashTextFile();
+
+        if (manage.isFileEmpty(outputFilePath)){
             List<String> hashedText = manage.readFileAndHashContent(inputFilePath);
 
             manage.writeToFile(hashedText, outputFilePath);
+        }
 
-            System.out.println("finished hashing");
-        };
+
+        System.out.println("finished hashing");
     }
 }
