@@ -25,9 +25,7 @@ public class PasswordVgApplication {
 
     @Bean
     public CommandLineRunner createHashFile() {
-        return args -> {
-            createHashTextFile();
-        };
+        return args -> createHashTextFile();
     }
 
     private void createHashTextFile(){

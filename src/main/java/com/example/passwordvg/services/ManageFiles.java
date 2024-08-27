@@ -94,7 +94,7 @@ public class ManageFiles {
                 return fileSize == 0;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Something went wrong");
         }
         return false;
     }
