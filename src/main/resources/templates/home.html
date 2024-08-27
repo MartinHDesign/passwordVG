@@ -1,9 +1,43 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="english">
 <head>
-    <title>Home</title>
+    <meta charset="UTF-8">
+    <title>Hash and Password Retrieval</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<h1>Welcome to the Home Page!</h1>
+<div class="main-container">
+
+    <header class="text-center mb-4">
+        <div class="header-buttons">
+            <a href="#" th:href="@{/home}" class="btn btn-primary mx-2">Hash Text</a>
+        </div>
+        <h1>MHD Password Cracker</h1>
+        <div class="header-buttons">
+            <a href="#" th:href="@{/crack}" class="btn btn-secondary mx-2">Crack Password</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="form-container">
+            <form th:action="@{/hash}" method="post">
+                <label for="textToHash">Enter text to hash:</label>
+                <input type="text" id="textToHash" name="textToHash" required />
+                <button type="submit">Hash</button>
+            </form>
+        </div>
+
+        <div class="form-container">
+            <form>
+                <label for="hashedMD5">Hashed MD5:</label>
+                <input type="text" id="hashedMD5" name="hashedMD5" th:value="${hashedMD5}" readonly />
+                <br/>
+                <label for="hashedSHA256">Hashed SHA-256:</label>
+                <input type="text" id="hashedSHA256" name="hashedSHA256" th:value="${hashedSHA256}" readonly />
+            </form>
+        </div>
+    </div>
+
+</div>
 </body>
 </html>

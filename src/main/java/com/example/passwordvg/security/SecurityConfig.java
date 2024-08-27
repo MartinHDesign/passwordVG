@@ -16,7 +16,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/home").authenticated()
-                        .requestMatchers("/login/**").permitAll()
+                        .requestMatchers("/login/**", "/css/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .oauth2Login(oauth2Login -> oauth2Login
