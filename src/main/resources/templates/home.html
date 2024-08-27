@@ -27,7 +27,7 @@
             </form>
         </div>
 
-        <div class="form-container">
+        <div class="form-container" th:if="${hashedMD5 != null}">
             <form>
                 <label for="hashedMD5">Hashed MD5:</label>
                 <input type="text" id="hashedMD5" name="hashedMD5" th:value="${hashedMD5}" readonly />
@@ -37,6 +37,7 @@
             </form>
         </div>
     </div>
+
 
 </div>
 </body>
