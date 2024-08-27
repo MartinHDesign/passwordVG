@@ -13,17 +13,13 @@ import java.util.List;
 
 public class ManageFiles {
 
-    private Path filePath;
+    private final Path filePath;
 
-    private HashUtils hashUtils = new HashUtils();
+    private final HashUtils hashUtils = new HashUtils();
 
 
     public ManageFiles() {
         this.filePath = Paths.get("src/main/java/com/example/passwordvg/utils/Hashes.txt");
-    }
-
-    public ManageFiles(String directoryPath, String fileName) {
-        this.filePath = Paths.get(directoryPath, fileName);
     }
 
     public void createHashTextFile() {
