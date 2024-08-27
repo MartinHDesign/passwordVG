@@ -50,13 +50,15 @@ public class PageController {
         return "crackPassword";
     }
 
-    private Model renderModel(HashRequestDTO hash, Model model){
+    private void renderModel(HashRequestDTO hash, Model model){
         if (hash.get().contains("Not")){
-            return model.addAttribute("retrievedPassword",hash.get());
-        } else {
-            String retrievedPassword = manageFiles.searchTextFile(hash.get());
 
-            return model.addAttribute("retrievedPassword",retrievedPassword);
+            model.addAttribute("retrievedPassword",hash.get());
+
+        } else {
+
+            String retrievedPassword = manageFiles.searchTextFile(hash.get());
+            model.addAttribute("retrievedPassword",retrievedPassword);
         }
     }
 }
