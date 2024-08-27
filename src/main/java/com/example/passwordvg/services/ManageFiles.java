@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ManageFiles {
@@ -97,5 +98,30 @@ public class ManageFiles {
             System.out.println("Something went wrong");
         }
         return false;
+    }
+
+    public String searchTextFile(String textToSearchFor){
+        String result = "Could not find password for given hash";
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(String.valueOf(filePath)))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+
+                String[] seprateHashes = line.split(":");
+
+                if (listContainsInput(seprateHashes,textToSearchFor)){
+                    result = seprateHashes[0];
+                    break;
+                }
+
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred while reading the file.");
+        }
+        System.out.println(result);
+        return result;
+    }
+    private boolean listContainsInput(String[] seperatedList, String textToSearchFor){
+        return Arrays.stream(seperatedList,1,seperatedList.length).anyMatch(textToSearchFor::equals);
     }
 }
