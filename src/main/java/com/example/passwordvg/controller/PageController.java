@@ -8,7 +8,9 @@ import com.example.passwordvg.utils.HashUtils;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -41,24 +43,19 @@ public class PageController {
         model.addAttribute("hashedSHA256", hashedSHA256);
         return "home";
     }
-
     @PostMapping("/password")
-    public String password(Model model,@Valid @RequestParam HashRequestDTO hashToRetrieve){
+    public String password(@Valid @ModelAttribute("hashToRetrieve") HashRequestDTO hashToRetrieve,
+                           BindingResult bindingResult,
+                           Model model) {
 
-        renderModel(hashToRetrieve,model);
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("retrievedPassword", "Invalid Hash format");
+        } else {
+            String retrievedPassword = manageFiles.searchTextFile(hashToRetrieve.getHash());
+            model.addAttribute("retrievedPassword", retrievedPassword);
+        }
 
         return "crackPassword";
     }
 
-    private void renderModel(HashRequestDTO hash, Model model){
-        if (hash.get().contains("Not")){
-
-            model.addAttribute("retrievedPassword",hash.get());
-
-        } else {
-
-            String retrievedPassword = manageFiles.searchTextFile(hash.get());
-            model.addAttribute("retrievedPassword",retrievedPassword);
-        }
-    }
 }
