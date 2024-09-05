@@ -2,38 +2,60 @@ package com.example.passwordvg.services;
 
 import com.example.passwordvg.utils.HashAlgorithm;
 import com.example.passwordvg.utils.HashUtils;
+import com.example.passwordvg.utils.SearchAlgorithm;
+import lombok.NoArgsConstructor;
 
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-
+@NoArgsConstructor
 public class ManageFiles {
 
-    private final Path filePath;
+    private final String sha256FilePath= "src/main/java/com/example/passwordvg/utils/sha256Hashes.txt";
+    private final String md5FilePath= "src/main/java/com/example/passwordvg/utils/md5Hashes.txt";
+    private static final int TOTAL_FILLER_LENGTH = 100;
 
     private final HashUtils hashUtils = new HashUtils();
 
+    public void createMD5andSHA256TextFiles(){
 
-    public ManageFiles() {
-        this.filePath = Paths.get("src/main/java/com/example/passwordvg/utils/Hashes.txt");
+        createHashTextFile(Path.of(sha256FilePath));
+
+        String leakedPasswordsPath = "src/main/java/com/example/passwordvg/utils/100k-most-used-passwords-NCSC.txt";
+
+        if (isFileEmpty(sha256FilePath)){
+            List<String> sha256 = sortedListOfHashesReadFromFile(HashAlgorithm.SHA256, leakedPasswordsPath);
+            writeToFile(sha256, sha256FilePath);
+        }
+
+        createHashTextFile(Path.of(md5FilePath));
+
+        if (isFileEmpty(md5FilePath)){
+            List<String> md5 = sortedListOfHashesReadFromFile(HashAlgorithm.MD5, leakedPasswordsPath);
+            writeToFile(md5, md5FilePath);
+        }
+
     }
 
-    public void createHashTextFile() {
+
+
+    private void createHashTextFile(Path path) {
         try {
 
-            Path parentDir = filePath.getParent();
+            Path parentDir = path.getParent();
             if (parentDir != null && !Files.exists(parentDir)) {
                 Files.createDirectories(parentDir);
             }
 
-            if (Files.notExists(filePath)) {
-                Files.createFile(filePath);
-                System.out.println("File created: " + filePath.getFileName());
+            if (Files.notExists(path)) {
+                Files.createFile(path);
+                System.out.println("File created: " + path.getFileName());
             } else {
                 System.out.println("File already exists.");
             }
@@ -42,33 +64,56 @@ public class ManageFiles {
         }
     }
 
-    public List<String> readFileAndHashContent(String filePath){
+    private List<String> sortedListOfHashesReadFromFile(HashAlgorithm HashAlgorithms, String filePath) {
         List<String> HashedText = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                StringBuilder stringBuilder = new StringBuilder();
 
-                String md5 = hashUtils.hashText(line, HashAlgorithm.MD5);
-                String sha256 = hashUtils.hashText(line, HashAlgorithm.SHA256);
+                if (isValidUtf8(line)) {
+                    String hashedLine = hashUtils.hashText(line, HashAlgorithms);
 
-                stringBuilder.append(line)
-                        .append(":")
-                        .append(md5)
-                        .append(":")
-                        .append(sha256);
+                    String baseString = hashedLine + ":" + line + ":";
 
-                String HashedString = stringBuilder.toString();
+                    byte[] byteArray = baseString.getBytes(StandardCharsets.UTF_8);
+                    int baseLength = byteArray.length;
 
-                HashedText.add(HashedString);
+                    int fillerLength = TOTAL_FILLER_LENGTH - baseLength;
+                    if (fillerLength < 0) fillerLength = 0;
 
+                    String filler = createFiller(fillerLength);
+
+                    String finalString = baseString + filler;
+
+                    byte[] finalBytes = finalString.getBytes(StandardCharsets.UTF_8);
+                    boolean is100Bytes = finalBytes.length == TOTAL_FILLER_LENGTH;
+
+                    if (is100Bytes){
+                        HashedText.add(finalString);
+                    }
+
+                }
             }
+            Collections.sort(HashedText);
         } catch (IOException e) {
             System.out.println("An error occurred while reading the file.");
         }
-
         return HashedText;
+    }
+
+    private boolean isValidUtf8(String line) {
+        try {
+            byte[] bytes = line.getBytes(StandardCharsets.UTF_8);
+            String test = new String(bytes, StandardCharsets.UTF_8);
+            return line.equals(test);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static String createFiller(int length) {
+        return new String(new char[length]).replace('\0', '!');
     }
 
 
@@ -100,28 +145,15 @@ public class ManageFiles {
         return false;
     }
 
-    public String searchTextFile(String textToSearchFor){
-        String result = "Could not find password for given hash";
+    public String searchTextFile(String hash) {
+        SearchAlgorithm searchAlgorithm = new SearchAlgorithm();
+        String result;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(String.valueOf(filePath)))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-
-                String[] seprateHashes = line.split(":");
-
-                if (listContainsInput(seprateHashes,textToSearchFor)){
-                    result = seprateHashes[0];
-                    break;
-                }
-
-            }
-        } catch (IOException e) {
-            System.out.println("An error occurred while reading the file.");
+        if (hash.length() == 64){
+            result = searchAlgorithm.binarySearchInTextFile(sha256FilePath,hash);
+        } else {
+            result = searchAlgorithm.binarySearchInTextFile(md5FilePath,hash);
         }
-        System.out.println(result);
         return result;
-    }
-    private boolean listContainsInput(String[] seperatedList, String textToSearchFor){
-        return Arrays.stream(seperatedList,1,seperatedList.length).anyMatch(textToSearchFor::equals);
     }
 }
